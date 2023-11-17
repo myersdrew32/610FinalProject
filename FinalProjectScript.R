@@ -31,5 +31,36 @@
 
 
 forwardstepwise <- function(data, response, predictors) {
-	# 
+	# Create vector to store selected variables in 
+	selected <- c()
+	
+	# Store predictor models in variable in functions environment that can be
+	# updated
+	predvars <- predictors
+	
+	# Set best predictor to empty
+	bestpred <- NULL
+	
+	# Set best model to empty
+	bestmodel <- NULL
+	
+	# Set best RSS to very high number, so first RSS will be lower
+	best_rss <- Inf
+	
+	# Create for loop to cycle through all variables, then keep the one 
+	# that lowers RSS the most 
+	for(var in predvars) {
+		curr_model <- lm(paste(response, "~", paste(c(selectedvars, var), collapse = "+")), 
+						 data = data)
+		# Save RSS from model
+		rss <- sum(resid(curr_model)^2)
+		
+		# compare the current model to best model, save var/model/rss if better
+		if(rss < best_rss) {
+			bestvar <- var
+			best_model <- curr_model
+			best_rss <- rss
+		}
+	}
+	
 }
