@@ -31,10 +31,10 @@
 
 
 forwardstepwise <- function(data, response, predictors) {
-	# Create vector to store selected variables in 
+	# Create vector to store selected variables
 	selected <- c()
 	
-	# Store predictor models in variable in functions environment that can be
+	# Store predictor models in variable in the function's environment that can be
 	# updated
 	predvars <- predictors
 	
@@ -42,38 +42,49 @@ forwardstepwise <- function(data, response, predictors) {
 	bestpred <- NULL
 	
 	# Set best model to empty
-	bestmodel <- NULL
+	best_model <- NULL
 	
-	# Set best RSS to very high number, so first RSS will be lower
+	# Set best RSS to a very high number, so the first RSS will be lower
 	best_rss <- Inf
 	
 	# Create a vector to store BICs in
-	BICvector <- NULL
+	BICvector <- numeric(length(predvars))
 	
-	# Create for loop to cycle through all variables, then keep the one 
-	# that lowers RSS the most 
-	for(var in predvars) {
-		curr_model <- lm(paste(response, "~", paste(c(selectedvars, var), collapse = "+")), 
-						 data = data)
-		# Save RSS from model
-		rss <- sum(resid(curr_model)^2)
-		
-		# Should we also save AIC/BIC to later select the ideal number of vars? 
-		
-		
-		# compare the current model to best model, save var/model/rss if better
-		if(rss < best_rss) {
-			bestvar <- var
-			best_model <- curr_model
-			best_rss <- rss
-			BICvector[var] <- BIC(curr_model)
+	# create a vector for Adj. R2s
+	Ar2vector <- numeric(length(predvars))
+	
+	while (length(predvars) > 0) {
+		# Create a for loop to cycle through all variables, then keep the one
+		# that lowers RSS the most
+		for (var in predvars) {
+			curr_model <- lm(paste(response, "~", paste(c(selected, var), collapse = "+")),
+							 data = data)
+			
+			# Save RSS from the model
+			rss <- sum(resid(curr_model)^2)
+			
+			# compare the current model to the best model, save var/model/rss if better
+			if (rss < best_rss) {
+				bestpred <- var
+				best_model <- curr_model
+				best_rss <- rss
+				BICvector[length(selected) + 1] <- BIC(curr_model)
+				Ar2vector[length(selected) + 1] <- summary(curr_model)$adj.r.squared
+			}
 		}
-		# Save the best predictor 
-		bestpred <- bestvar
-		# remove the best predictor from the list of predictors before doing loop again
-		predvars <- setdiff(predvars, bestvar)
+		
+		# Save the best predictor
+		selected <- c(selected, bestpred)
+		
+		# Remove the best predictor from the list of predictors
+		predvars <- setdiff(predvars, bestpred)
+		
+		if (length(selected) == length(predictors)) {
+			break
+		}
 	}
 	
-	# Select the best model by minimizing BIC
-	Best_num_preds <- which.min(BICvector)
+	return(list(selected = selected, best_model = best_model, BICvector = BICvector, AdjustR2vector = Ar2vector))
 }
+
+forwardstepwise(data =mtcars, response = "mpg", predictors = c("cyl", "disp", "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb"))
