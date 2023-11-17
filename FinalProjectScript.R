@@ -47,6 +47,9 @@ forwardstepwise <- function(data, response, predictors) {
 	# Set best RSS to very high number, so first RSS will be lower
 	best_rss <- Inf
 	
+	# Create a vector to store BICs in
+	BICvector <- NULL
+	
 	# Create for loop to cycle through all variables, then keep the one 
 	# that lowers RSS the most 
 	for(var in predvars) {
@@ -55,12 +58,22 @@ forwardstepwise <- function(data, response, predictors) {
 		# Save RSS from model
 		rss <- sum(resid(curr_model)^2)
 		
+		# Should we also save AIC/BIC to later select the ideal number of vars? 
+		
+		
 		# compare the current model to best model, save var/model/rss if better
 		if(rss < best_rss) {
 			bestvar <- var
 			best_model <- curr_model
 			best_rss <- rss
+			BICvector[var] <- BIC(curr_model)
 		}
+		# Save the best predictor 
+		bestpred <- bestvar
+		# remove the best predictor from the list of predictors before doing loop again
+		predvars <- setdiff(predvars, bestvar)
 	}
 	
+	# Select the best model by minimizing BIC
+	Best_num_preds <- which.min(BICvector)
 }
