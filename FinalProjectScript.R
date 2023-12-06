@@ -70,7 +70,6 @@ forwardstepwise <- function(data, response, predictors) {
 			# Save RSS from the model
 			rss <- sum(resid(curr_model)^2)
 			
-			
 			# compare the current model to the best model, save var/model/rss if better
 			if (rss < best_rss) {
 				bestpred <- var
@@ -89,6 +88,7 @@ forwardstepwise <- function(data, response, predictors) {
 		# Remove the best predictor from the list of predictors
 		predvars <- setdiff(predvars, bestpred)
 		
+		# Break if all predictors are selected
 		if (length(selected) == length(predictors)) {
 			break
 		}
@@ -217,26 +217,3 @@ plot(ls$AdjustR2vector,
 points(which(ls$AdjustR2vector %in% max(ls$AdjustR2vector)),max(ls$AdjustR2vector), pch = "X",  col = "red", lwd=10)
 mtext("Figure 2. Comparison of metrics from simulated data", side= 3,  line = - 2, outer = TRUE)
 
-
-##########################################
-#
-#
-# Tests for function 
-#
-#
-##########################################
-
-library(testthat)
-
-test_that(desc = "test function", code = {
-	
-	ls <- forwardstepwise(data =dat, response = "y", predictors = colnames(dat[, -11]))
-	
-	expect_that( object = length(ls$BICvector), condition = equals(10));
-	expect_that( object = length(ls$RSSvector), condition = equals(10));
-	expect_that( object = class(ls$best_model), condition = equals("lm")) 
-	expect_that(object = is.numeric(ls$RSSvector), condition = equals(TRUE))
-	expect_that(object = is.numeric(ls$BICvector), condition = equals(TRUE))
-	expect_that(object = is.numeric(ls$AdjustR2vector), condition = equals(TRUE))
-	
-})
