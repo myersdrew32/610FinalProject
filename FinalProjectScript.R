@@ -88,3 +88,115 @@ forwardstepwise <- function(data, response, predictors) {
 }
 
 forwardstepwise(data =mtcars, response = "mpg", predictors = c("cyl", "disp", "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb"))
+
+
+##########################################
+#
+#
+# Using the function with MTCARS dataset 
+#
+#
+##########################################
+
+ls = forwardstepwise(data =mtcars, 
+					 response = "mpg", 
+					 predictors = c("cyl", "disp", "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb"))
+
+par(mfrow=c(1,3))
+
+plot(ls$RSSvector, xlab = "Number of predictors", ylab = "RSS", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$RSSvector %in% min(ls$RSSvector)),min(ls$RSSvector), pch = "X", col = "red", lwd=10)
+
+plot(ls$BICvector, 
+	 main = "", 
+	 xlab = "Number of predictors", 
+	 ylab = "BIC", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$BICvector %in% min(ls$BICvector)),min(ls$BICvector), pch = "X",  col = "red", lwd=10)
+
+plot(ls$AdjustR2vector, 
+	 xlab = "Number of predictors", 
+	 ylab = "Adjusted R^2", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$AdjustR2vector %in% max(ls$AdjustR2vector)),max(ls$AdjustR2vector), pch = "X",  col = "red", lwd=10)
+mtext("Figure 1. Comparison of metrics from MTCARS data", side= 3,  line = - 2, outer = TRUE)
+
+
+##########################################
+#
+#
+# Simulating Data and using function
+#
+#
+##########################################
+
+# install.packages("faux")
+library(faux)
+
+dat <- rnorm_multi(n = 10000, 
+				   mu = c(20, 20, 20, 5, 10, 15, 2, 3, 5, 6),
+				   sd = c(5, 5, 5, 2, 3, 4, 5, 6, 7, 8),
+				   r =0.01, 
+				   varnames = c("x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"),
+				   empirical = FALSE)
+
+
+
+
+dat$y <-0.95*dat$x1+0*dat$x2+0*dat$x3+0*dat$x4+0.25*dat$x5+0.25*dat$x6+0.25*dat$x7+0.25*dat$x8+0.25*dat$x9+0*dat$x10+rnorm(10000, 5, 2)
+res <- cor(dat)
+round(res, 2)
+
+forwardstepwise(data =dat, response = "y", predictors = colnames(dat[, -11]))
+
+ls <- forwardstepwise(data =dat, response = "y", predictors = colnames(dat[, -11]))
+
+par(mfrow=c(1,3))
+plot(ls$RSSvector, xlab = "Number of predictors", ylab = "RSS", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$RSSvector %in% min(ls$RSSvector)),min(ls$RSSvector), pch = "X",  col = "red", lwd=10)
+
+plot(ls$BICvector, 
+	 main = "", 
+	 xlab = "Number of predictors", 
+	 ylab = "BIC", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$BICvector %in% min(ls$BICvector)),min(ls$BICvector), pch = "X",  col = "red", lwd=10)
+
+plot(ls$AdjustR2vector, 
+	 xlab = "Number of predictors", 
+	 ylab = "Adjusted R^2", 
+	 col='blue', 
+	 type = "l")
+points(which(ls$AdjustR2vector %in% max(ls$AdjustR2vector)),max(ls$AdjustR2vector), pch = "X",  col = "red", lwd=10)
+mtext("Figure 2. Comparison of metrics from simulated data", side= 3,  line = - 2, outer = TRUE)
+
+
+##########################################
+#
+#
+# Tests for function 
+#
+#
+##########################################
+
+library(testthat)
+
+test_that(desc = "test function", code = {
+	
+	ls <- forwardstepwise(data =dat, response = "y", predictors = colnames(dat[, -11]))
+	
+	expect_that( object = length(ls$BICvector), condition = equals(10));
+	expect_that( object = length(ls$RSSvector), condition = equals(10));
+	expect_that( object = class(ls$best_model), condition = equals("lm")) 
+	expect_that(object = is.numeric(ls$RSSvector), condition = equals(TRUE))
+	expect_that(object = is.numeric(ls$BICvector), condition = equals(TRUE))
+	expect_that(object = is.numeric(ls$AdjustR2vector), condition = equals(TRUE))
+	
+})
