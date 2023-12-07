@@ -1,3 +1,5 @@
+context("Testing stepwise selection function")
+source("FinalProjectScript.R")
 library(testthat)
 
 #################################

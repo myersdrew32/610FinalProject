@@ -127,12 +127,11 @@ forwardstepwise <- function(data, response, predictors) {
 				
 				AdjustR2vector = Ar2vector, 
 				AR2selected = AR2selected, 
-				AR2_choice = summary(AR2_choice)))
+				AR2_choice = summary(AR2_choice),
+				
+				# For Testing
+				all_models = all_models))
 }
-
-forwardstepwise(data = mtcars, 
-				response = "mpg", 
-				predictors = c("cyl", "disp", "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb"))
 
 
 ##########################################
