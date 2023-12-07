@@ -32,6 +32,7 @@
 
 # Create function that takes dataset, response, and predictors
 forwardstepwise <- function(data, response, predictors) {
+	
 	# Create vector to store selected variables
 	selected <- c()
 	
@@ -42,14 +43,11 @@ forwardstepwise <- function(data, response, predictors) {
 	# Set best predictor to empty
 	bestpred <- NULL
 	
-	# Set models vector to empty
+	# Set models vector to empty 
 	best_model <- NULL
 	
-	# All models list 
+	# Create a list to store all models in
 	all_models <- list()
-	
-	# Set best RSS to a very high number, so the first RSS will be lower
-	best_rss <- Inf
 	
 	# Create a vector to store RSSs in
 	RSSvector <- numeric(length(predvars))
@@ -60,17 +58,24 @@ forwardstepwise <- function(data, response, predictors) {
 	# Create a vector for Adj. R2s
 	Ar2vector <- numeric(length(predvars))
 	
-	while (length(predvars) > 0) {
+	# Set best RSS to a very high number, so the first RSS will be lower
+	best_rss <- Inf
+	
+	# Create while loop that will break when all variables have been cycled 
+	# through by using an if statement
+	while (TRUE) {
 		# Create a for loop to cycle through all variables, then keep the one
 		# that lowers RSS the most
+		
 		for (var in predvars) {
-			curr_model <- lm(paste(response, "~", paste(c(selected, var), collapse = "+")),
-							 data = data)
+			curr_model <- lm(paste(response, "~", paste(c(selected, var), 
+							collapse = "+")), data = data)
 			
 			# Save RSS from the model
 			rss <- sum(resid(curr_model)^2)
 			
-			# compare the current model to the best model, save var/model/rss if better
+			# compare the current model to the best model
+			# save variable, model, and RSS if predictor is better
 			if (rss < best_rss) {
 				bestpred <- var
 				best_model <- curr_model
@@ -82,7 +87,7 @@ forwardstepwise <- function(data, response, predictors) {
 			}
 		}
 		
-		# Save the best predictor
+		# Save the best predictor (based on RSS)
 		selected <- c(selected, bestpred)
 		
 		# Remove the best predictor from the list of predictors
